@@ -6,6 +6,9 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from utils.rend_util import get_psnr
+import wandb
+wandb.login(key='c4779119ee9d0aea91b4afb315bafb0bac03be91')
+wandb.init(project="ssr")
 
 
 def Recon_trainer(cfg,model,loss,optimizer,scheduler,train_loader,test_loader,device,checkpoint):
@@ -16,7 +19,8 @@ def Recon_trainer(cfg,model,loss,optimizer,scheduler,train_loader,test_loader,de
     os.makedirs(log_dir, exist_ok=True)
 
     cfg.write_config()
-    tb_logger = SummaryWriter(log_dir)
+    # tb_logger = SummaryWriter(log_dir)
+
 
     start_epoch = 0
     iter = 0
@@ -103,24 +107,41 @@ def Recon_trainer(cfg,model,loss,optimizer,scheduler,train_loader,test_loader,de
                 )
             cfg.log_string(msg)
 
-            tb_logger.add_scalar('Loss/total_loss', total_loss.item(), iter)
-            tb_logger.add_scalar('Loss/color_loss', loss_output['rgb_loss'].item(), iter)
-            tb_logger.add_scalar('Loss/eikonal_loss', loss_output['eikonal_loss'].item(), iter)
-            tb_logger.add_scalar('Loss/smooth_loss', loss_output['smooth_loss'].item(), iter)
-            tb_logger.add_scalar('Loss/depth_loss', loss_output['depth_loss'].item(), iter)
-            tb_logger.add_scalar('Loss/normal_l1_loss', loss_output['normal_l1'].item(), iter)
-            tb_logger.add_scalar('Loss/normal_cos_loss', loss_output['normal_cos'].item(), iter)
-            tb_logger.add_scalar('Loss/ray_mask_loss', loss_output['ray_mask_loss'].item(), iter)
-            tb_logger.add_scalar('Loss/instance_mask_loss', loss_output['instance_mask_loss'].item(), iter)
-            tb_logger.add_scalar('Loss/sdf_loss', loss_output['sdf_loss'].item(), iter)
-            tb_logger.add_scalar('Loss/vis_sdf_loss', loss_output['vis_sdf_loss'].item(), iter)
-            tb_logger.add_scalar('Loss/grad_norm', total_norm, iter)
+            # tb_logger.add_scalar('Loss/total_loss', total_loss.item(), iter)
+            # tb_logger.add_scalar('Loss/color_loss', loss_output['rgb_loss'].item(), iter)
+            # tb_logger.add_scalar('Loss/eikonal_loss', loss_output['eikonal_loss'].item(), iter)
+            # tb_logger.add_scalar('Loss/smooth_loss', loss_output['smooth_loss'].item(), iter)
+            # tb_logger.add_scalar('Loss/depth_loss', loss_output['depth_loss'].item(), iter)
+            # tb_logger.add_scalar('Loss/normal_l1_loss', loss_output['normal_l1'].item(), iter)
+            # tb_logger.add_scalar('Loss/normal_cos_loss', loss_output['normal_cos'].item(), iter)
+            # tb_logger.add_scalar('Loss/ray_mask_loss', loss_output['ray_mask_loss'].item(), iter)
+            # tb_logger.add_scalar('Loss/instance_mask_loss', loss_output['instance_mask_loss'].item(), iter)
+            # tb_logger.add_scalar('Loss/sdf_loss', loss_output['sdf_loss'].item(), iter)
+            # tb_logger.add_scalar('Loss/vis_sdf_loss', loss_output['vis_sdf_loss'].item(), iter)
+            # tb_logger.add_scalar('Loss/grad_norm', total_norm, iter)
 
-            tb_logger.add_scalar('Statistics/beta', model.module.density.get_beta().item(), iter)
-            tb_logger.add_scalar('Statistics/alpha', 1. / model.module.density.get_beta().item(), iter)
-            tb_logger.add_scalar('Statistics/psnr', psnr.item(), iter)
+            # tb_logger.add_scalar('Statistics/beta', model.module.density.get_beta().item(), iter)
+            # tb_logger.add_scalar('Statistics/alpha', 1. / model.module.density.get_beta().item(), iter)
+            # tb_logger.add_scalar('Statistics/psnr', psnr.item(), iter)
             current_lr = optimizer.state_dict()['param_groups'][0]['lr']
-            tb_logger.add_scalar("train/lr", current_lr, iter)
+            # tb_logger.add_scalar("train/lr", current_lr, iter)
+
+            #replace all the above with wandb.log
+            wandb.log({"Loss/total_loss": total_loss.item(), 
+                       "Loss/color_loss": loss_output['rgb_loss'].item(), 
+                       "Loss/eikonal_loss": loss_output['eikonal_loss'].item(), 
+                       "Loss/smooth_loss": loss_output['smooth_loss'].item(), 
+                       "Loss/depth_loss": loss_output['depth_loss'].item(), 
+                       "Loss/normal_l1_loss": loss_output['normal_l1'].item(), 
+                       "Loss/normal_cos_loss": loss_output['normal_cos'].item(), 
+                       "Loss/ray_mask_loss": loss_output['ray_mask_loss'].item(), 
+                       "Loss/instance_mask_loss": loss_output['instance_mask_loss'].item(), 
+                       "Loss/sdf_loss": loss_output['sdf_loss'].item(), 
+                       "Loss/vis_sdf_loss": loss_output['vis_sdf_loss'].item(), 
+                       "Loss/grad_norm": total_norm, "Statistics/beta": model.module.density.get_beta().item(), 
+                       "Statistics/alpha": 1. / model.module.density.get_beta().item(), 
+                       "Statistics/psnr": psnr.item(), 
+                       "train/lr": current_lr})
 
             iter += 1
 
@@ -184,9 +205,11 @@ def Recon_trainer(cfg,model,loss,optimizer,scheduler,train_loader,test_loader,de
                 eval_loss_info[key] = eval_loss_info[key] / (batch_id + 1)
             eval_loss_msg = f'avg_eval_loss is {avg_eval_loss}'
             cfg.log_string(eval_loss_msg)
-            tb_logger.add_scalar('eval/eval_loss', avg_eval_loss, e)
+            wandb.log({"eval/eval_loss": avg_eval_loss})
+            #tb_logger.add_scalar('eval/eval_loss', avg_eval_loss, e)
             for key in eval_loss_info:
-                tb_logger.add_scalar("eval/" + key, eval_loss_info[key], e)
+                # tb_logger.add_scalar("eval/" + key, eval_loss_info[key], e)
+                wandb.log({"eval/"+key: eval_loss_info[key]})
             if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
                 scheduler.step(avg_eval_loss)
             else:

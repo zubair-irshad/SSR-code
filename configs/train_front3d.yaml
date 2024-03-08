@@ -2,7 +2,7 @@ resume: False                           # if true resume training, start_epoch i
 finetune: False                         # if true set start_epoch is 0
 method: ssr                            # use the trainer
 exp_name: front3d_ckpt                   # experiment name
-save_root_path: ./output                # save path = os.path.join(save_root_path, exp_name)
+save_root_path: ./output_train_local                # save path = os.path.join(save_root_path, exp_name)
 weight: model_latest.pth
 show_rendering: False                    # NOTE: True for novel view synthesis
 fix_random_seed: True                   # fix random seed
@@ -16,7 +16,7 @@ eval:
   
 device:
   use_gpu: True
-  gpu_ids: '0'                          # multi-gpu train, e.g. '3,6' will use 3st and 6st gpus
+  gpu_ids: '0,1,2'                          # multi-gpu train, e.g. '3,6' will use 3st and 6st gpus
 
 data:
   dataset: FRONT3D
@@ -25,12 +25,12 @@ data:
   split_dir: ./dataset
   sdf_path: data/FRONT3D/gt-sdf
   train_class_name: ['desk', 'dresser', 'sofa', 'bed', 'bookshelf', 'cabinet', 'desk', 'dresser', 'chair', 'night_stand', 'table', 'desk', 'dresser']
-  test_class_name: 'demo_colormesh'
+  test_class_name: 'colormesh'
   load_dynamic: True                    # True:load the data dynamically, False:store them in the memory firstly
   trial: False                          # only use 200 split
   batch_size:
-    train: 4
-    val: 1
+    train: 48
+    val: 8
     test: 1
   num_workers: 16
   num_pixels:

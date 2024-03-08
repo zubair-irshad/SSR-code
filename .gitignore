@@ -1,4 +1,6 @@
 # Byte-compiled / optimized / DLL files
+output_train_local/*
+wandb/*
 __pycache__/
 *.py[cod]
 *$py.class

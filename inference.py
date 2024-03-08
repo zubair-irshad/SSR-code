@@ -69,6 +69,9 @@ def run(cfg):
 
     for batch_id, (indices, model_input, ground_truth) in enumerate(infer_loader):
         img_id = ground_truth['img_id'][0].split('.')[0].split('/')[-1]
+        print("img_id", img_id)
+
+        cfg.log_string('img_id: %s' % (img_id))
         obj_id = ground_truth['object_id'][0].numpy()
         cname = ground_truth['cname'][0]
         print(img_id)
