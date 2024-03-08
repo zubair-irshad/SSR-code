@@ -29,8 +29,8 @@ data:
   load_dynamic: True                    # True:load the data dynamically, False:store them in the memory firstly
   trial: False                          # only use 200 split
   batch_size:
-    train: 64
-    val: 8
+    train: 96
+    val: 16
     test: 1
   num_workers: 16
   num_pixels:
